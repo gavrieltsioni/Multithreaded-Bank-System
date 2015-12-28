@@ -1,0 +1,158 @@
+TESTCASE 1:
+This test case will show most of the errors that are prevented:
+
+	(NEW TERMINAL) IN TERMINAL 1:
+		make
+		./server
+			(server should begin printing balances)
+	(NEW TERMINAL) IN TERMINAL 2:
+		./client 127.0.0.1
+			(in Terminal 2: SERVER: Connection to server successful.)
+			(in Terminal 1: SERVER: Connection to client successful.)
+		open
+			(in Terminal 2: ERROR: Please provide an account name.)
+			(in Terminal 1: SERVER: Received from client: open.)
+			(in Terminal 1: SERVER: Begin interaction: open)
+				(The server will always print these messages to show what the client has inputted. They will now be omitted.)
+		hello world
+			(in Terminal 2: ERROR: Command not recognized.)
+		hello
+			(in Terminal 2: ERROR: Command not recognized.)
+		open one two
+			(in Terminal 2: ERROR: Command not recognized.)
+		open one
+			(in Terminal 2: SERVER: Opened account: one)
+			(The server will begin showing a balance for an account named 'one' in Terminal 1)
+		credit 10
+			(in Terminal 2: ERROR: Credit command only valid in account session.)
+		debit 10
+			(in Terminal 2: ERROR: Debit command only valid in account session.)
+		balance
+			(in Terminal 2: ERROR: Balance command only valid in account session.)
+		finish
+			(in Terminal 2: ERROR: Not in account session.)
+		start
+			(in Terminal 2: ERROR: Please provide an account name.)
+		start one
+			(in Terminal 2: SERVER: Started account: one)
+			(The server will now show that account 'one' is in service.)
+		open two
+			(in Terminal 2: ERROR: Cannot open while in account session.)
+		start two
+			(in Terminal 2: ERROR: Please finish current account session.)
+		credit
+			(in Terminal 2: ERROR: Please provide an amount.)
+		debit
+			(in Terminal 2: ERROR: Invalid debit amount.)
+	(NEW TERMINAL) IN TERMINAL 3:
+		./client 127.0.0.1
+			(in Terminal 3: SERVER: Connection to server successful.)
+			(in Terminal 1: SERVER: Connection to client successful.)
+		start one
+			(in Terminal 3: ERROR: This account is already in session elsewhere.)
+	IN TERMINAL 2:
+		finish
+			(in Terminal 2: SERVER: Finished account session.)
+			(The server will now indicate that the account 'one' is no longer in service.)
+	IN TERMINAL 3:
+		start one
+			(in Terminal 3: SERVER: Started account: one)
+			(The server will now indicate that the account 'one' is in service.)
+		debit 10
+			(in Terminal 3: ERROR: Invalid debit amount.)
+		credit -1
+			(in Terminal 3: ERROR: Invalid credit amount.)
+	IN TERMINAL 1:
+		^C	(control+c)
+			(in Terminal 2: Client closing.)
+			(in Terminal 3: Client closing.)
+
+TESTCASE 2:
+This test case will show a normal interaction with the bank.
+Only the final bank output will be shown
+
+	(NEW TERMINAL) IN TERMINAL 1:
+		make
+		./server
+	(NEW TERMINAL) IN TERMINAL 2:
+		./client 127.0.0.1
+		open john
+		start john
+		credit 1000
+		finish
+		exit
+	(NEW TERMINAL) IN TERMINAL 3:
+		./client 127.0.0.1
+		start john
+		debit 500
+		finish
+		open sally
+		start sally
+		credit 500
+	IN TERMINAL 2:
+		./client 127.0.0.1
+		start sally
+	(NEW TERMINAL) IN TERMINAL 4:
+		./client 127.0.0.1
+		open garfield
+		start garfield
+		balance
+		credit 5000
+	IN TERMINAL 3:
+		finish
+	IN TERMINAL 2:
+		start sally
+		debit 250
+		finish
+		start garfield
+	IN TERMINAL 4:
+		finish
+		exit
+	IN TERMINAL 2:
+		start garfield
+		credit 250
+		exit
+	IN TERMINAL 1:
+		^C	(control+c)
+
+	FINAL BANK OUTPUT:
+	---------------
+	john - 500.00
+	sally - 250.00
+	garfield - 5250.00
+	---------------
+
+TESTCASE 3:
+This test case will show how the server can shut down clients, and how the clients will finish account sessions when they are exited during an account session.
+Only relevant output will be shown.
+
+	(NEW TERMINAL) IN TERMINAL 1:
+		make
+		./server
+
+	(NEW  TERMINAL) IN TERMINAL 2:
+		./client 127.0.0.1
+		open grundo
+		start grundo
+		^C	(control+c)
+			(in Terminal 1: SERVER: Received from client: finish.)
+			(The server now shows account 'grundo' as no longer being in service.)
+		./client 127.0.0.1
+		start grundo
+		exit
+			(The server now shows account 'grundo' as no longer being in service.)
+		./client 127.0.0.1		
+	(NEW TERMINAL) IN TERMINAL 3:
+		./client 127.0.0.1
+	(NEW TERMINAL) IN TERMINAL 4:
+		./client 127.0.0.1
+	IN TERMINAL 1:
+		^C	(control+c)
+			(in Terminal 1: SERVER: Server shutting down. Closing all clients.)
+			(in Terminal 2: Client closing.)
+			(in Terminal 3: Client closing.)
+			(in Terminal 4: Client closing.)
+
+
+
+
